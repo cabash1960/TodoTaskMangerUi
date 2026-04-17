@@ -2,7 +2,7 @@ import type React from "react";
 import { testData } from "../libs/data";
 import { useRef, useEffect, useState } from "react";
 import { ClockPlus } from "lucide-react";
-import type { StatusType, PriorityType, TaskType } from "../libs/type";
+import type { TaskType } from "../libs/type";
 
 function Todo() {
   const startY = useRef(0);
@@ -19,7 +19,10 @@ function Todo() {
 
   const ITEM_SIZE = 176;
   const todosLengthRef = useRef(todos.length);
-  todosLengthRef.current = todos.length;
+
+  useEffect(() => {
+    todosLengthRef.current = todos.length;
+  }, [todos.length]);
 
   function updateItemStlye() {
     if (!listRef.current) return;
