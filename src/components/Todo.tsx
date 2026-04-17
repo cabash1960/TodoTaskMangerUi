@@ -168,7 +168,7 @@ function Todo() {
 
   return (
     <div className="flex justify-center items-center  min-h-screen bg-[#fcefc2]/10 relative  overflow-hidden">
-      <div className=" max-w-[150] mx-auto">
+      <div className=" max-w-150 mx-auto">
         {/* <div
           className="absolute w-150 h-150 bg-[#fcefc2]/60 rounded-full blur-[160px]
     -top-50 -left-50"
