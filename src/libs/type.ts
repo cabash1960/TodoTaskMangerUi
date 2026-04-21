@@ -3,7 +3,7 @@ export interface TaskType {
   title: string;
   priority: string;
   dueDate: string;
-  status: string;
+  status: StatusType;
   description: string;
   createdAt: string;
 }
