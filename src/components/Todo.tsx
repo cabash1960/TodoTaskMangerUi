@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { ClockPlus } from "lucide-react";
 import type { TaskType } from "../libs/type";
 import { Calendar } from "./ui/calendar";
+import Dropdown from "./Dropdown";
 
 function Todo() {
   const startY = useRef(0);
@@ -22,11 +23,11 @@ function Todo() {
     id: number;
     dueDate: string;
   } | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
   const ITEM_SIZE = 176;
   const todosLengthRef = useRef(todos.length);
 
-  // close calendar on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (!(e.target as HTMLElement).closest("[data-slot='calendar'], time")) {
@@ -43,12 +44,17 @@ function Todo() {
     };
   }, [openCalendar]);
 
-  // keep todosLengthRef in sync
   useEffect(() => {
     todosLengthRef.current = todos.length;
   }, [todos.length]);
 
-  // wheel scroll
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const el = listRef.current;
     if (!el) return;
@@ -156,7 +162,7 @@ function Todo() {
       id: Date.now(),
       title: task,
       description: "Add a description",
-      priority: "High",
+      priority: "Set priority",
       dueDate: "",
       status: "pending",
       createdAt: new Date().toISOString(),
@@ -178,7 +184,7 @@ function Todo() {
 
   function getTimeRemaining(dueDate: string) {
     if (!dueDate) return null;
-    const diff = new Date(dueDate).getTime() - Date.now();
+    const diff = new Date(dueDate).getTime() - now;
     const abs = Math.abs(diff);
     const mins = Math.round(abs / 60000);
     const hours = Math.round(abs / 3600000);
@@ -206,29 +212,37 @@ function Todo() {
     : 0;
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-[#fcefc2]/10 relative overflow-hidden">
-      <div className="max-w-150 mx-auto w-full">
-        {/* header */}
-        <div className="flex justify-around items-center gap-2 px-4">
-          <h1>Todo App</h1>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 relative overflow-hidden">
+      <div className="w-full max-w-[95%] sm:max-w-[400px] lg:max-w-[600px] mx-auto">
+        <div className="flex justify-between items-center gap-2 px-4 w-full">
+          <h1
+            data-testid="test-todo-headerTitle"
+            className={`font-bold text-2xl duration-300 transition-all md:text-3xl lg:text-4xl text-center text-gray-900 ${isTaskOpen ? " scale-90 text-gray-600" : "scale-100"}`}
+          >
+            Dodo
+          </h1>
           <input
             type="text"
             value={task}
             placeholder="New task..."
             onFocus={() => setIsTaskOpen(true)}
             onChange={(e) => setTask(e.target.value)}
+            onBlur={() => setIsTaskOpen(false)}
             onKeyDown={(e) => {
               if (e.key === "Enter") addTask();
+              setIsTaskOpen(false);
             }}
-            className={`${isTaskOpen ? "outline-1" : "outline-none"}`}
+            className={`flex-1 min-w-0 px-4 py-2 transition-all duration-300 placeholder-gray-400 bg-transparent ${isTaskOpen ? "shadow-[0_0_15px_rgba(0,0,0,0.1)] scale-105 focus:outline-none rounded-4xl bg-white/50" : "outline-none"}`}
           />
-          <button onClick={addTask}>
-            <ClockPlus />
+          <button
+            onClick={addTask}
+            className={`shrink-0 duration-300 transition-all text-gray-700 ${isTaskOpen ? "inset-shadow-xs scale-90" : "scale-100"}`}
+          >
+            <ClockPlus size={24} />
           </button>
         </div>
 
-        {/* overall progress bar */}
-        <div className="px-4 mt-2">
+        <div className="px-4 mt-10">
           <div className="flex justify-between text-xs mb-1 opacity-50">
             <span>
               {completedCount} of {todos.length} done
@@ -251,12 +265,10 @@ function Todo() {
           </div>
         </div>
 
-        {/* card viewport */}
         <article
           data-testid="test-todo-card"
-          className="w-150 overflow-hidden h-[440px] mt-16 relative mx-auto rounded-4xl z-1000"
+          className="w-full overflow-hidden h-[440px] mt-8 sm:mt-16 relative mx-auto   z-1000 "
         >
-          {/* calendar — inside article so it's positioned relative to it */}
           {openCalendar && (
             <div className="absolute z-1001 top-20 left-1/2 -translate-x-1/2">
               <Calendar
@@ -279,16 +291,14 @@ function Todo() {
             </div>
           )}
 
-          {/* decorative blobs */}
-          <div className="absolute w-full h-[440px] bg-[#fffdf8] z-1000 inset-0 blur-[10px] -top-110 pointer-events-none" />
-          <div className="absolute w-full h-[200px] bg-[#fffdf8] z-100 blur-[10px] -bottom-40 pointer-events-none" />
-          <div className="absolute w-30 h-30 bg-[#00F2FE] rounded-full blur-[100px] bottom-30 right-30 pointer-events-none" />
-          <div className="absolute w-30 h-30 z-10 bg-[#EE609C] rounded-full blur-[100px] top-30 left-30 pointer-events-none" />
+          <div className="absolute w-full h-[440px] bg-gray-100 z-1000 inset-0 blur-[30px] -top-100 pointer-events-none" />
+          <div className="absolute w-full h-[200px] bg-gray-100 z-100 blur-[30px] -bottom-40 pointer-events-none" />
+          {/* <div className="absolute w-30 h-30 bg-[#00F2FE] rounded-full blur-[100px] bottom-30 right-30 pointer-events-none" /> */}
+          {/* <div className="absolute w-30 h-30 z-10 bg-[#EE609C] rounded-full blur-[100px] top-30 left-30 pointer-events-none" /> */}
 
-          {/* scrollable list */}
           <ul
             ref={listRef}
-            className="flex flex-col absolute p-12 cursor-grab left-0 active:cursor-grabbing touch-none"
+            className="flex flex-col absolute w-full p-4 sm:p-8 md:p-14 cursor-grab left-0 active:cursor-grabbing touch-none"
             onMouseDown={mouseDown}
             onTouchStart={(e) => {
               if (
@@ -333,19 +343,17 @@ function Todo() {
               return (
                 <li
                   key={task.id}
-                  className="p-4 bg-gray-50/30 relative rounded-4xl h-[176px] overflow-hidden border-t-4 z-100 backdrop-blur-3xl border-2 border-gray-50/40 shadow-[25px_25px_10px_5px_rgba(0,0,0,0.25)] cursor-auto mb-3"
+                  className="flex flex-col p-4 bg-gray-50/20 relative rounded-3xl sm:rounded-4xl h-[176px] overflow-hidden z-100 backdrop-blur-3xl border-t-4 border-t-gray-50 border-l-4 border-l-gray-50 shadow-[10px_5px_15px_10px_rgba(0,0,0,0.1)] cursor-auto mb-3"
                 >
-                  {/* decorative blobs */}
-                  <div className="absolute w-20 h-20 z-5 bg-[#EE609C] rounded-full blur-[100px] bottom-10 right-10 pointer-events-none" />
-                  <div className="absolute w-150 h-150 bg-[#fcefc2]/10 rounded-full blur-[160px] -top-50 -left-50 pointer-events-none" />
+                  <div className="absolute w-20 h-20 z-5 bg-[#000000] rounded-full blur-[100px] bottom-5 right-8 pointer-events-none" />
+                  <div className="absolute w-150 h-150 bg-gray-50/ -z-50 rounded-full blur-[160px] -top-50 -left-50 pointer-events-none" />
 
-                  {/* title row */}
-                  <div className="flex justify-between items-start">
-                    <div className="flex gap-2 items-center">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex gap-2 items-center min-w-0 flex-1">
                       <input
                         type="checkbox"
                         data-testid="test-todo-complete-toggle"
-                        className="cursor-pointer"
+                        className="cursor-pointer accent-[#EE609C] shrink-0 w-4 h-4"
                         checked={task.status === "completed"}
                         aria-label={`Mark ${task.title} as complete`}
                         onChange={(e) =>
@@ -354,27 +362,75 @@ function Todo() {
                           })
                         }
                       />
-                      <h3
+                      <h2
                         data-testid="test-todo-title"
-                        className={`${task.status === "completed" ? "line-through opacity-50" : ""}`}
+                        className={`font-medium truncate text-[20px] ${task.status === "completed" ? "line-through opacity-50" : ""}`}
+                        title={task.title}
                       >
                         {task.title}
-                      </h3>
+                      </h2>
                     </div>
-                    <span
+                    <Dropdown
                       data-testid="test-todo-priority"
-                      aria-label={`Priority: ${task.priority}`}
+                      value={task.priority}
+                      pos={"top-5 left-50 right-10"}
+                      onChange={(val) =>
+                        updateTodo(task.id, {
+                          priority: val as TaskType["priority"],
+                        })
+                      }
+                      options={[
+                        {
+                          value: "Set priority",
+                          label: "Set priority",
+                          color: "#9ca3af",
+                        },
+                        { value: "High", label: "High", color: "#f87171" },
+                        { value: "Medium", label: "Medium", color: "#fac575" },
+                        { value: "Low", label: "Low", color: "#a8e49e" },
+                      ]}
+                    />
+                    {/* <select
+                      data-testid="test-todo-priority"
+                      name="todo-priority"
+                      className="cursor-pointer text-xs sm:text-sm outline-none shrink-0 bg-transparent appearance-none text-center"
+                      style={{
+                        color:
+                          task.priority === "High"
+                            ? "#f87171"
+                            : task.priority === "Medium"
+                              ? "#fac575"
+                              : task.priority === "Low"
+                                ? "#a8e49e"
+                                : "#9ca3af",
+                      }}
+                      value={task.priority}
+                      onChange={(e) =>
+                        updateTodo(task.id, {
+                          priority: e.target.value as TaskType["priority"],
+                        })
+                      }
                     >
-                      {task.priority}
-                    </span>
+                      <option value="Set priority" style={{ color: "#9ca3af" }}>
+                        Set priority
+                      </option>
+                      <option value="High" style={{ color: "#f87171" }}>
+                        High
+                      </option>
+                      <option value="Medium" style={{ color: "#fac575" }}>
+                        Medium
+                      </option>
+                      <option value="Low" style={{ color: "#a8e49e" }}>
+                        Low
+                      </option>
+                    </select> */}
                   </div>
 
-                  {/* description — contentEditable */}
                   <p
                     data-testid="test-todo-description"
                     contentEditable={true}
                     suppressContentEditableWarning={true}
-                    className="outline-none text-sm opacity-70 cursor-text"
+                    className="outline-none text-[12px] mt-2 sm:text-sm text-gray-500 cursor-text overflow-hidden whitespace-nowrap text-ellipsis shrink-0"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
@@ -392,12 +448,11 @@ function Todo() {
                     {task.description}
                   </p>
 
-                  {/* due date + time remaining */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap  mt-2 items-center gap-2">
                     <time
                       data-testid="test-todo-due-date"
                       dateTime={task.dueDate}
-                      className="cursor-pointer text-xs opacity-50"
+                      className="cursor-pointer text-xs text-gray-400"
                       onClick={() =>
                         setOpenCalendar(
                           openCalendar?.id === task.id
@@ -429,12 +484,19 @@ function Todo() {
                     )}
                   </div>
 
-                  {/* status + delete */}
-                  <div className="flex justify-between items-center">
-                    <select
+                  <div className="flex mt-3 justify-between items-center">
+                    {/* <select
                       data-testid="test-todo-status"
                       name="todo-status"
-                      className="cursor-pointer bg-transparent text-sm outline-none"
+                      className="cursor-pointer text-xs sm:text-sm outline-none shrink-0 bg-transparent appearance-none"
+                      style={{
+                        color:
+                          task.status === "completed"
+                            ? "#a8e49e"
+                            : task.status === "in-progress"
+                              ? "#fac575"
+                              : "#9ca3af",
+                      }}
                       value={task.status}
                       onChange={(e) =>
                         updateTodo(task.id, {
@@ -442,20 +504,45 @@ function Todo() {
                         })
                       }
                     >
-                      <option value="pending">Pending</option>
-                      <option value="in-progress">In Progress</option>
-                      <option value="completed">Completed</option>
-                    </select>
+                      <option value="pending" style={{ color: "#9ca3af" }}>
+                        Pending
+                      </option>
+                      <option value="in-progress" style={{ color: "#fac575" }}>
+                        In Progress
+                      </option>
+                      <option value="completed" style={{ color: "#a8e49e" }}>
+                        Completed
+                      </option>
+                    </select> */}
+                    <Dropdown
+                      data-testId="test-todo-status"
+                      value={task.status}
+                      onChange={(val) =>
+                        updateTodo(task.id, {
+                          status: val as TaskType["status"],
+                        })
+                      }
+                      pos={"top-5 left-10 right-50"}
+                      options={[
+                        {
+                          value: "pending",
+                          label: "Pending",
+                          color: "#9ca3af",
+                        },
+                        {
+                          value: "in-progress",
+                          label: "In Progress",
+                          color: "#fac575",
+                        },
+                        {
+                          value: "completed",
+                          label: "Completed",
+                          color: "#a8e49e",
+                        },
+                      ]}
+                    />
 
-                    <div className="flex gap-2">
-                      <button
-                        data-testid="test-todo-edit-button"
-                        aria-label={`Edit ${task.title}`}
-                        className="cursor-pointer text-sm opacity-50 hover:opacity-100"
-                        onClick={() => console.log("edit", task.id)}
-                      >
-                        ✎
-                      </button>
+                    <div className="absolute bottom-5 right-5">
                       <button
                         data-testid="test-todo-delete-button"
                         aria-label={`Delete ${task.title}`}
@@ -467,21 +554,20 @@ function Todo() {
                     </div>
                   </div>
 
-                  {/* tags */}
                   <ul
                     data-testid="test-todo-tags"
                     role="list"
-                    className="flex gap-1 flex-wrap mt-1"
+                    className="flex gap-1 flex-wrap  mt-2"
                   >
                     <li
                       data-testid="test-todo-tag-work"
-                      className="text-xs px-2 py-0.5 rounded-full bg-white/10"
+                      className="text-xs px-2 py-0.5 rounded-full text-gray-400 bg-gray-200"
                     >
                       work
                     </li>
                     <li
                       data-testid="test-todo-tag-urgent"
-                      className="text-xs px-2 py-0.5 rounded-full bg-white/10"
+                      className="text-xs px-2 py-0.5 rounded-full text-gray-400 bg-gray-200"
                     >
                       urgent
                     </li>

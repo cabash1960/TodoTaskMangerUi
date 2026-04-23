@@ -9,4 +9,4 @@ export interface TaskType {
 }
 
 export type StatusType = "pending" | "in-progress" | "completed";
-export type PriorityType = "High" | "Medium" | "Low";
+export type PriorityType = "High" | "Medium" | "Low" | "Set priority";
