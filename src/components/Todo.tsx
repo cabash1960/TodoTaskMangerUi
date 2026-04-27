@@ -232,7 +232,7 @@ function Todo() {
               if (e.key === "Enter") addTask();
               setIsTaskOpen(false);
             }}
-            className={`flex-1 min-w-0 px-4 py-2 transition-all duration-300 placeholder-gray-400 bg-transparent ${isTaskOpen ? "shadow-[0_0_15px_rgba(0,0,0,0.1)] scale-105 focus:outline-none rounded-4xl bg-white/50" : "outline-none"}`}
+            className={`flex-1 min-w-0 px-4 py-2 transition-all duration-300 placeholder-gray-400 bg-transparent text-base ${isTaskOpen ? "shadow-[0_0_15px_rgba(0,0,0,0.1)] scale-105 focus:outline-none rounded-4xl bg-white/50" : "outline-none"}`}
           />
           <button
             onClick={addTask}
@@ -430,7 +430,7 @@ function Todo() {
                     data-testid="test-todo-description"
                     contentEditable={true}
                     suppressContentEditableWarning={true}
-                    className="outline-none text-[12px] mt-2 sm:text-sm text-gray-500 cursor-text overflow-hidden whitespace-nowrap text-ellipsis shrink-0"
+                    className="outline-none text-base mt-2 text-gray-500 cursor-text overflow-hidden whitespace-nowrap text-ellipsis shrink-0"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
